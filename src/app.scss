@@ -47,3 +47,12 @@
 .item-button {
     color: var(--pf-v5-global--Color--200);
 }
+
+// FIXME: don't use fixed values here
+#text-editor-card {
+    height: 75vh;
+}
+
+#text-editor {
+    height: 65vh;
+}
