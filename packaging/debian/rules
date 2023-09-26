@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_clean:
+	# don't call `make clean`, in a release dist/ is precious
+	rm -f po/LINGUAS
+
+override_dh_auto_test:
+	# don't call `make check`, these are integration tests
+
+override_dh_auto_install:
+	make install DESTDIR=debian/cockpit-navigator PREFIX=/usr
