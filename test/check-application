@@ -8,6 +8,8 @@ import os
 # import Cockpit's machinery for test VMs and its browser test API
 import testlib
 
+DISTROS_WITH_SELINUX = ["fedora", "rhel", "centos"]
+
 # Nondestructive tests all run in the same running VM. This allows them to run in Packit, Fedora, and RHEL dist-git gating
 # They must not permanently change any file or configuration on the system in a way that influences other tests.
 @testlib.nondestructive
@@ -545,17 +547,21 @@ class TestNavigator(testlib.MachineCase):
         # Create file symbolic link
         self.create_link(b, "test", "test-sym", "symbolic", 1)
         b.wait_visible("[data-item='test-sym']")
-        self.assertEqual(m.execute("ls -l /home/admin/test-sym")[0:23], "lrwxrwxrwx. 1 root root")
+        if any(image in m.image for image in DISTROS_WITH_SELINUX):
+            selinux_dot = "."
+        else:
+            selinux_dot = ""
+        self.assertEqual(m.execute("ls -l /home/admin/test-sym")[0:23], f"lrwxrwxrwx{selinux_dot} 1 root root")
 
         # Create file hard link
         self.create_link(b, "test", "test-hard", "hard", 1)
         b.wait_visible("[data-item='test-hard']")
-        self.assertEqual(m.execute("ls -l /home/admin/test-hard")[0:23], "-rw-r--r--. 2 root root")
+        self.assertEqual(m.execute("ls -l /home/admin/test-hard")[0:23], f"-rw-r--r--{selinux_dot} 2 root root")
 
         # Create folder symbolic link
         self.create_link(b, "testdir", "testdir-sym", "symbolic", 4)
         b.wait_visible("[data-item='testdir-sym']")
-        self.assertEqual(m.execute("ls -l /home/admin/testdir-sym")[0:23], "lrwxrwxrwx. 1 root root")
+        self.assertEqual(m.execute("ls -l /home/admin/testdir-sym")[0:23], f"lrwxrwxrwx{selinux_dot} 1 root root")
 
         # Creating folder hard link should return an error
         self.create_link(b, "testdir", "testdir-hard", "hard", 5)
